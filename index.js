@@ -25,17 +25,31 @@ app.get("/", function (req, res) {
 
 app.get("/api/", (req, res) => getTimeStamp(req, res))
 
-app.get("/api/:date", (req, res) => getTimeStamp(req, res))
+app.get("/api/:date?", (req, res) => getTimeStamp(req, res))
+
+function isValidDateString(date_string) {
+  const regex = /^\d{4}-\d{2}-\d{2}$|^\d+$/
+  return regex.test(date_string)
+}
+
+function parseDateString(date_string) {
+  if (!date_string.includes("-")) {
+    return parseInt(date_string)
+  }
+  return date_string
+}
 
 function getTimeStamp(req, res) {
-  let dateString = req.params.date
+  let date_string = req.params.date
   let date
 
-  if (dateString) {
-    if (!dateString.includes("-")) {
-      dateString = parseInt(dateString)
+  if (date_string) {
+    if (isValidDateString(date_string)) {
+      date = new Date(parseDateString(date_string))
+    } else {
+      res.json({ error: "Invalid Date" })
+      return
     }
-    date = new Date(dateString)
   } else {
     date = new Date()
   }
