@@ -23,20 +23,15 @@ app.get("/", function (req, res) {
 //   res.json({greeting: 'hello API'});
 // });
 
-app.get("/api/", (req, res) => getTimeStamp(req, res))
-
 app.get("/api/:date?", (req, res) => getTimeStamp(req, res))
 
-function isValidDateString(date_string) {
-  const regex = /^\d{4}-\d{2}-\d{2}$|^\d+$/
+function isUnix(date_string) {
+  const regex = /^\d+$/
   return regex.test(date_string)
 }
 
-function parseDateString(date_string) {
-  if (!date_string.includes("-")) {
-    return parseInt(date_string)
-  }
-  return date_string
+function isValidDate(date) {
+  return date instanceof Date && isNaN(date)
 }
 
 function getTimeStamp(req, res) {
@@ -44,14 +39,18 @@ function getTimeStamp(req, res) {
   let date
 
   if (date_string) {
-    if (isValidDateString(date_string)) {
-      date = new Date(parseDateString(date_string))
+    if (isUnix(date_string)) {
+      date = new Date(parseInt(date_string))
     } else {
-      res.json({ error: "Invalid Date" })
-      return
+      date = new Date(date_string)
     }
   } else {
     date = new Date()
+  }
+
+  if (isValidDate(date)) {
+    res.json({ error: "Invalid Date" })
+    return
   }
 
   res.json({
